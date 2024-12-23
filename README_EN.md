@@ -2,6 +2,10 @@
 
 A minimal system tray implementation using Go/Win32, including tray menus and balloon notifications.
 
+|                       tray                       |                      toast                       |
+| :----------------------------------------------: | :----------------------------------------------: |
+| <img src="https://thumbsnap.com/i/Rpw3yBbs.png"> | <img src="https://thumbsnap.com/i/mxjos6b2.png"> |
+
 ### Origin
 
 Existing Go/Win tray programs are outdated and lack balloon notifications, so I decided to reimplement it.
