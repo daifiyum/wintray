@@ -1,0 +1,21 @@
+IDI_MAIN ICON "./p2.ico"
+
+1 VERSIONINFO
+FILEVERSION 1,0,0,1
+
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404b0"
+        BEGIN
+            VALUE "FileDescription", "wintray"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "LegalCopyright", "Copyright (C) 2024"
+            VALUE "OriginalFilename", "main.exe"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END
