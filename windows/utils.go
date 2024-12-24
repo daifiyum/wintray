@@ -1,9 +1,12 @@
 package windows
 
 import (
+	"fmt"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 // 加载本地 .ico
@@ -55,4 +58,49 @@ func TipFromStr(s string) [128]uint16 {
 	var szTip [128]uint16
 	copy(szTip[:], utf16Tip)
 	return szTip
+}
+
+// 注册AUMID
+func RegisterAUMID(aumid, displayName, iconURI string) error {
+	keyPath := `Software\Classes\AppUserModelId\` + aumid
+
+	key, _, err := registry.CreateKey(registry.CURRENT_USER, keyPath, registry.SET_VALUE)
+	if err != nil {
+		return err
+	}
+	defer key.Close()
+
+	if err := key.SetStringValue("DisplayName", displayName); err != nil {
+		return err
+	}
+
+	if err := key.SetStringValue("IconUri", iconURI); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 删除已注册的AUMID
+func UnregisterAUMID(aumid string) error {
+	keyPath := `Software\Classes\AppUserModelId\` + aumid
+
+	err := registry.DeleteKey(registry.CURRENT_USER, keyPath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 绑定AUMID
+// 最低受支持的客户端: Windows 7 [仅限桌面应用]
+// 最低受支持的服务器: Windows Server 2008 R2 [仅限桌面应用]
+func SetAUMID(aumid string) error {
+	aumidPtr, _ := syscall.UTF16PtrFromString(aumid)
+	r1, _, err := SetCurrentProcessExplicitAppUserModelID.Call(uintptr(unsafe.Pointer(aumidPtr)))
+	if r1 != 0 {
+		return fmt.Errorf("SetCurrentProcessExplicitAppUserModelID failed: %v", err)
+	}
+	return nil
 }

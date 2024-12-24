@@ -12,35 +12,43 @@ Existing Go/Win tray programs are outdated and lack balloon notifications, so I 
 
 ### Important Notes (Must Read)
 
-**Balloon Notifications:**
+**AUMID:**
 
-Since balloon notifications are implemented using Win32, they require the use of a `.rc` file. The reasons are as follows:
+![](https://thumbsnap.com/i/35oeEvry.png)
 
-| Feature                             | Traditional Notifications (Shell_NotifyIcon)                                                                               | Modern Notifications (ToastNotification)    |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| Implementation                      | Uses `Shell_NotifyIcon` Win32 API                                                                                          | Uses `ToastNotification` WinRT API          |
-| Icons (Window, Notifications, etc.) | Defined when registering the window                                                                                        | Retrieved via AUMID defined in the registry |
-| App Name                            | Retrieved from `FileDescription` in the `.rc` file, or uses the file name with extension (e.g., `main.exe`) if not defined | Retrieved via AUMID defined in the registry |
+The application icon and name inside the red border in the image can be defined using AUMID:
+
+```go
+func init() {
+	// Get the absolute path of the image
+	iconURL, _ := filepath.Abs("./p1.ico")
+	// Register AUMID in the registry
+	W.RegisterAUMID("wintray", "wintray", iconURL)
+	// Bind the current process to the registered AUMID
+	W.SetAUMID("wintray")
+}
+
+// RegisterAUMID("aumid", "Application Name", "Application Icon Path")
+// Parameter 1: String type, can be defined arbitrarily
+// Parameter 2: String type, application name, can be defined arbitrarily
+// Parameter 3: String type, application icon path, must be an absolute path
+```
 
 **.rc File:**
 
-`FileDescription`: Defines the application name in the top-left corner of balloon notifications. If empty, it will display the `filename.exe`.
+AUMID requires writing to the registry. If you do not want to define the application name for the toast notification using AUMID, you can use the value of `FileDescription` in the .rc file to define the application name. If left empty, it will display `filename.exe`.
 
-`IDI_MAIN ICON`: Defines the icon for `filename.exe`.
+It is important to note that the .rc file can only define the application name for the toast notification. The application icon comes from the second parameter of the `wintray.New("wintray", "./p1.ico")` function, which is also the tray icon.
 
-For other definitions, please refer to relevant documentation.
+Since the .rc file is involved, it needs to be included during compilation:
 
-**Compilation:**
-
-Since the `.rc` file is required, it must be included during compilation:
-
-```
+```sh
 go build -o main.exe ./
 
-// Hide the command-line window
+# Hide the command line window
 go build -ldflags="-H=windowsgui" -o main.exe ./
 
-// Incorrect method, this will not include the .rc file
+# Incorrect method, this will not include the .rc file
 go build -o main.exe ./main.go
 ```
 

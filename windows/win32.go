@@ -35,8 +35,9 @@ var (
 	SetProcessDPIAware  = user32.MustFindProc("SetProcessDPIAware")
 
 	// shell32
-	shell32         = syscall.MustLoadDLL("shell32.dll")
-	ShellNotifyIcon = shell32.MustFindProc("Shell_NotifyIconW")
+	shell32                                 = syscall.MustLoadDLL("shell32.dll")
+	ShellNotifyIcon                         = shell32.MustFindProc("Shell_NotifyIconW")
+	SetCurrentProcessExplicitAppUserModelID = shell32.MustFindProc("SetCurrentProcessExplicitAppUserModelID")
 )
 
 // 常量标识

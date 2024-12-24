@@ -2,11 +2,23 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/daifiyum/wintray"
 	W "github.com/daifiyum/wintray/windows"
 )
+
+func init() {
+	// 设置AUMID，气泡通知左上角的图标和名称基于此
+	// 获取图片绝对路径
+	iconURL, _ := filepath.Abs("./p1.ico")
+	// 在注册表中注册AUMID
+	W.RegisterAUMID("wintray", "wintray", iconURL)
+	// 将当前进程绑定到上面注册的AUMID上
+	W.SetAUMID("wintray")
+	// W.UnregisterAUMID("wintray") // 可以删除注册的AUMID
+}
 
 func main() {
 	app := wintray.New("wintray", "./p1.ico")

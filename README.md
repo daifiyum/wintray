@@ -14,25 +14,33 @@ go/win32 实现的最简托盘，包含托盘菜单和气泡通知
 
 ### 注意（必看）
 
-**气泡通知：**
+**AUMID：**
 
-由于使用 win32 实现的气泡通知，使用时需要结合.rc 文件，具体原因如下：
+![](https://thumbsnap.com/i/35oeEvry.png)
 
-| 特性             | 传统通知 (Shell_NotifyIcon)                                                     | 现代通知 (ToastNotification)       |
-| ---------------- | ------------------------------------------------------------------------------- | ---------------------------------- |
-| 实现方式         | 使用 `Shell_NotifyIcon` Win32 API                                               | 使用 `ToastNotification` WinRT API |
-| 窗口、通知等图标 | 注册窗口时定义                                                                  | 通过注册表内定义的 AUMID 获取      |
-| APP 名称         | 从 `.rc` 文件的 `FileDescription` 获取，若无则使用文件名加后缀（如 `main.exe`） | 通过注册表内定义的 AUMID 获取      |
+图中红色边框里面的是应用图标和名称，这个可以通过AUMID来定义：
+
+```
+func init() {
+	// 获取图片绝对路径
+	iconURL, _ := filepath.Abs("./p1.ico")
+	// 在注册表中注册AUMID
+	W.RegisterAUMID("wintray", "wintray", iconURL)
+	// 将当前进程绑定到上面注册的AUMID上
+	W.SetAUMID("wintray")
+}
+
+// RegisterAUMID("aumid", "应用名称", "应用图标路径")
+// 参数1: 字符串类型，可以随便定义
+// 参数2: 字符串类型，应用名称，可以随便定义
+// 参数3: 字符串类型, 应用图标路径，必须是绝对路径
+```
 
 **.rc 文件：**
 
-`FileDescription`：定义气泡通知左上角应用名称，为空则显示`文件名.exe`
+AUMID需要写入注册表，如果不想通过AUMID来定义气泡通知的应用名称，则可以使用.rc文件内`FileDescription`的值来定义应用名称，为空显示`文件名.exe`
 
-`IDI_MAIN ICON`：定义`文件名.exe`的图标
-
-其他定义请自行查找
-
-**编译：**
+需要注意的是，.rc文件只能定义气泡通知的应用名称，应用图标则来自`wintray.New("wintray", "./p1.ico")`函数的第二个参数，他也是托盘图标
 
 由于有.rc 文件，编译时需要包含
 
