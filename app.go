@@ -179,20 +179,19 @@ func (t *App) createWindow() error {
 // 初始化托盘
 func (t *App) initTrayIcon() error {
 	hIcon, _ := W.LoadIconFromFile(t.icon)
-	var n W.NOTIFYICONDATAW
-	n.CbSize = uint32(unsafe.Sizeof(n))
-	n.HWnd = t.hwnd
-	n.UID = 1
-	n.UFlags = W.NIF_ICON | W.NIF_TIP | W.NIF_MESSAGE
-	n.HIcon = hIcon
-	n.UCallbackMessage = W.WM_TRAY_NOTIFYICON
-	n.SzTip = W.TipFromStr(t.tooltip)
+	var nid W.NOTIFYICONDATAW
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	nid.HWnd = t.hwnd
+	nid.UID = 1
+	nid.UFlags = W.NIF_ICON | W.NIF_TIP | W.NIF_MESSAGE
+	nid.HIcon = hIcon
+	nid.UCallbackMessage = W.WM_TRAY_NOTIFYICON
+	nid.SzTip = W.TipFromStr(t.tooltip)
 
-	t.nid = n
+	t.nid = nid
 
 	ret, _, err := W.ShellNotifyIcon.Call(W.NIM_ADD, uintptr(unsafe.Pointer(&t.nid)))
 	if ret == 0 {
-		fmt.Println(ret, err)
 		return fmt.Errorf("failed to add tray icon: %w", err)
 	}
 
@@ -227,20 +226,19 @@ func (t *App) SetIcon(iconPath string) error {
 
 // 弹出一条系统通知
 func (t *App) ShowTrayNotification(title, msg string) error {
-	t.nid.CbSize = uint32(unsafe.Sizeof(t.nid))
-	t.nid.HWnd = t.hwnd
-	t.nid.UFlags = W.NIF_INFO
+	var nid W.NOTIFYICONDATAW
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	nid.UID = 1
+	nid.HWnd = t.hwnd
+	nid.UFlags = W.NIF_INFO
 
-	W.SetUTF16String(&t.nid.SzInfoTitle, title)
-	W.SetUTF16String(&t.nid.SzInfo, msg)
+	W.SetUTF16String(&nid.SzInfoTitle, title)
+	W.SetUTF16String(&nid.SzInfo, msg)
 
-	ret, _, err := W.ShellNotifyIcon.Call(W.NIM_MODIFY, uintptr(unsafe.Pointer(&t.nid)))
+	ret, _, err := W.ShellNotifyIcon.Call(W.NIM_MODIFY, uintptr(unsafe.Pointer(&nid)))
 	if ret == 0 {
 		return fmt.Errorf("Shell_NotifyIcon failed: %w", err)
 	}
-	t.nid.UFlags = W.NIF_ICON | W.NIF_TIP | W.NIF_MESSAGE
-	t.nid.SzInfoTitle = [64]uint16{}
-	t.nid.SzInfo = [256]uint16{}
 
 	return nil
 }
