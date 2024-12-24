@@ -239,6 +239,8 @@ func (t *App) ShowTrayNotification(title, msg string) error {
 		return fmt.Errorf("Shell_NotifyIcon failed: %w", err)
 	}
 	t.nid.UFlags = W.NIF_ICON | W.NIF_TIP | W.NIF_MESSAGE
+	t.nid.SzInfoTitle = [64]uint16{}
+	t.nid.SzInfo = [256]uint16{}
 
 	return nil
 }
