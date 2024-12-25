@@ -1,7 +1,6 @@
 package wintray
 
 import (
-	"errors"
 	"fmt"
 	"runtime"
 	"syscall"
@@ -47,42 +46,48 @@ func New(t, i string) *App {
 func (t *App) Run() error {
 	// 设置进程 DPI 感知
 	if err := t.setProcessDPIAware(); err != nil {
-		return fmt.Errorf("failed to set process DPI aware: %w", err)
+		return err
 	}
 
 	// 注册窗口类
 	if err := t.registerWindowClass(); err != nil {
-		return fmt.Errorf("failed to register window class: %w", err)
+		return err
 	}
 
 	// 创建窗口
 	if err := t.createWindow(); err != nil {
-		return fmt.Errorf("failed to create window: %w", err)
+		return err
 	}
 
 	// 初始化托盘图标
 	if err := t.initTrayIcon(); err != nil {
-		return fmt.Errorf("failed to initialize tray icon: %w", err)
+		return err
 	}
 
 	// 消息循环
 	if err := t.messageLoop(); err != nil {
-		return fmt.Errorf("failed to run message loop: %w", err)
+		return err
 	}
 
 	return nil
 }
 
 // 消息循环
+// https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-getmessage
 func (t *App) messageLoop() error {
 	var msg W.MSG
 	for {
-		ret, _, _ := W.GetMessage.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0)
-		if ret <= 0 {
-			return errors.New("GetMessage failed")
+		ret, _, err := W.GetMessage.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0)
+
+		switch int32(ret) {
+		case 0:
+			return nil
+		case -1:
+			return fmt.Errorf("GetMessage failed with error: %d", err)
+		default:
+			W.TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
+			W.DispatchMessage.Call(uintptr(unsafe.Pointer(&msg)))
 		}
-		W.TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
-		W.DispatchMessage.Call(uintptr(unsafe.Pointer(&msg)))
 	}
 }
 
