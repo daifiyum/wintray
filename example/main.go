@@ -55,7 +55,7 @@ func main() {
 
 	app.SetMenu(menu)
 
-	app.Click(func() {
+	app.SetOnLeftClick(func() {
 		fmt.Println("左键点击")
 		app.ShowTrayNotification("通知", "这是一条通知")
 	})
@@ -63,7 +63,7 @@ func main() {
 	// 这个函数会在托盘运行前调用，可以在这里做一些初始化操作
 	// 例如：基于这个托盘实现的REST API服务，就可以在这里面启动API服务
 	// 当然，只是为了规范，你也可以不调用这个函数
-	app.Ready(func() {
+	app.SetOnInitialize(func() {
 		fmt.Println("准备就绪")
 	})
 
